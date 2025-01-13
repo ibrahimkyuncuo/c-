@@ -1,0 +1,2 @@
+# c-
+fırın otomasyonu
