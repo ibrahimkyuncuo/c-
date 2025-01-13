@@ -1,0 +1,249 @@
+#include <iomanip>
+#include <cstring>
+#include <stdlib.h>
+#include <conio.h>
+#include <stdio.h>
+#include <fstream>
+#include <iostream>
+#include <locale.h>
+
+using namespace std;
+
+struct Firin {
+    char firinAdi[80];
+    char adres[120];
+    char telefon[20];
+    int gunlukUretim; 
+    char ekmekCesitleri[120]; 
+    char calismaSaatleri[30]; 
+};
+
+void FirinEkle();
+void FirinListeleme();
+void FirinArama();
+void FirinSil();
+void FirinDuzenle();
+
+int main() {
+    setlocale(LC_ALL, "Turkish");
+    char anamenu;
+    do {
+        system("cls");
+
+        cout << "Ekmek Satan Fırın Otomasyonu " << endl;
+        cout << " Lütfen Bir Seçim Yapınız " << endl;
+        cout << " 1- Fırın Ekleme " << endl;
+        cout << "  2- Fırın Listeleme  " << endl;
+        cout << "  3- Fırın Arama  " << endl;
+        cout << "  4- Fırın Sil  " << endl;
+        cout << "  5- Fırın Düzenleme  " << endl;
+
+        char secim;
+        cin >> secim;
+
+        switch (secim) {
+            case '1': {
+                FirinEkle();
+                break;
+            }
+            case '2': {
+                FirinListeleme();
+                break;
+            }
+            case '3': {
+                FirinArama();
+                break;
+            }
+            case '4': {
+                FirinSil();
+                break;
+            }
+            case '5': {
+                FirinDuzenle();
+                break;
+            }
+        }
+
+        cout << "Ana menüye dönmek için: a, çıkmak için: c basın." << endl;
+        anamenu = getche();
+
+    } while (anamenu == 'a');
+
+    return 0;
+}
+
+Firin firin;
+
+void FirinEkle() {
+    ofstream yaz("firinlar.dat", ios::binary | ios::app);
+    char secim;
+    int adet = 0;
+
+    do {
+        cout << "Fırın Adı Giriniz: ";
+        cin.ignore();
+        cin.getline(firin.firinAdi, 80);
+        cout << "Adres Giriniz: ";
+        cin.getline(firin.adres, 120);
+        cout << "Telefon Numarası Giriniz: ";
+        cin >> firin.telefon;
+        cout << "Günlük Üretim Kapasitesi (ekmek sayısı): ";
+        cin >> firin.gunlukUretim;
+        cout << "Ekmek Çeşitleri (ör: beyaz, tam buğday): ";
+        cin.ignore();
+        cin.getline(firin.ekmekCesitleri, 120);
+        cout << "Çalışma Saatleri (ör: 07:00 - 22:00): ";
+        cin.getline(firin.calismaSaatleri, 30);
+
+        yaz.write((char *)&firin, sizeof(firin));
+        adet++;
+
+        cout << "Başka fırın eklemek ister misiniz (E/H)? ";
+        secim = getche();
+        cout << endl;
+    } while (secim == 'e' || secim == 'E');
+
+    cout << adet << " adet fırın eklendi." << endl;
+
+    yaz.close();
+}
+
+void FirinListeleme() {
+    ifstream oku("firinlar.dat", ios::binary | ios::app);
+
+    oku.seekg(0, ios::end);
+    int kayitSayisi = oku.tellg() / sizeof(firin);
+    cout << "Toplam fırın kayıt sayısı: " << kayitSayisi << endl;
+
+    if (kayitSayisi > 0) {
+        for (int i = 0; i < kayitSayisi; i++) {
+            oku.seekg(i * sizeof(firin));
+            oku.read((char *)&firin, sizeof(firin));
+
+            cout << i + 1 << ". Fırın Bilgileri" << endl;
+            cout << "Fırın Adı: " << firin.firinAdi << endl;
+            cout << "Adres: " << firin.adres << endl;
+            cout << "Telefon: " << firin.telefon << endl;
+            cout << "Günlük Üretim Kapasitesi: " << firin.gunlukUretim << " ekmek" << endl;
+            cout << "Ekmek Çeşitleri: " << firin.ekmekCesitleri << endl;
+            cout << "Çalışma Saatleri: " << firin.calismaSaatleri << endl;
+        }
+    } else {
+        cout << "Kayıt bulunamadı." << endl;
+    }
+
+    oku.close();
+}
+
+void FirinArama() {
+    ifstream oku("firinlar.dat", ios::binary | ios::app);
+
+    oku.seekg(0, ios::end);
+    int kayitSayisi = oku.tellg() / sizeof(firin);
+
+    cout << "Aranan fırının adını giriniz: ";
+    char arananAdi[80];
+    cin.ignore();
+    cin.getline(arananAdi, 80);
+
+    if (kayitSayisi > 0) {
+        for (int i = 0; i < kayitSayisi; i++) {
+            oku.seekg(i * sizeof(firin));
+            oku.read((char *)&firin, sizeof(firin));
+
+            if (strcmp(firin.firinAdi, arananAdi) == 0) {
+                cout << "Bulunan Fırın Bilgileri:" << endl;
+                cout << "Fırın Adı: " << firin.firinAdi << endl;
+                cout << "Adres: " << firin.adres << endl;
+                cout << "Telefon: " << firin.telefon << endl;
+                cout << "Günlük Üretim Kapasitesi: " << firin.gunlukUretim << " ekmek" << endl;
+                cout << "Ekmek Çeşitleri: " << firin.ekmekCesitleri << endl;
+                cout << "Çalışma Saatleri: " << firin.calismaSaatleri << endl;
+                return;
+            }
+        }
+        cout << "Aranan fırın bulunamadı." << endl;
+    } else {
+        cout << "Kayıt bulunamadı." << endl;
+    }
+
+    oku.close();
+}
+
+void FirinSil() {
+    char silinecekAdi[80];
+    cout << "Silmek istediğiniz fırının adını giriniz: ";
+    cin.ignore();
+    cin.getline(silinecekAdi, 80);
+
+    ifstream oku("firinlar.dat", ios::binary);
+    ofstream yaz("yedek.dat", ios::binary);
+
+    bool bulundu = false;
+
+    while (oku.read((char *)&firin, sizeof(firin))) {
+        if (strcmp(firin.firinAdi, silinecekAdi) == 0) {
+            bulundu = true;
+            cout << "Fırın silindi: " << firin.firinAdi << endl;
+        } else {
+            yaz.write((char *)&firin, sizeof(firin));
+        }
+    }
+
+    oku.close();
+    yaz.close();
+
+    remove("firinlar.dat");
+    rename("yedek.dat", "firinlar.dat");
+
+    if (!bulundu) {
+        cout << "Aranan fırın bulunamadı." << endl;
+    }
+}
+
+void FirinDuzenle() {
+    char duzenlenecekAdi[80];
+    cout << "Düzenlemek istediğiniz fırının adını giriniz: ";
+    cin.ignore();
+    cin.getline(duzenlenecekAdi, 80);
+
+    ifstream oku("firinlar.dat", ios::binary);
+    ofstream yaz("yedek.dat", ios::binary);
+
+    bool bulundu = false;
+
+    while (oku.read((char *)&firin, sizeof(firin))) {
+        if (strcmp(firin.firinAdi, duzenlenecekAdi) == 0) {
+            bulundu = true;
+            cout << "Yeni bilgiler giriniz." << endl;
+            cout << "Fırın Adı: ";
+            cin.getline(firin.firinAdi, 80);
+            cout << "Adres: ";
+            cin.getline(firin.adres, 120);
+            cout << "Telefon Numarası: ";
+            cin >> firin.telefon;
+            cout << "Günlük Üretim Kapasitesi: ";
+            cin >> firin.gunlukUretim;
+            cout << "Ekmek Çeşitleri: ";
+            cin.ignore();
+            cin.getline(firin.ekmekCesitleri, 120);
+            cout << "Çalışma Saatleri: ";
+            cin.getline(firin.calismaSaatleri, 30);
+			 } 
+			 yaz.write((char *)&firin, sizeof(firin));
+ }
+
+oku.close();
+yaz.close();
+
+remove("firinlar.dat");
+rename("yedek.dat", "firinlar.dat");
+
+if (bulundu) {
+    cout << "Fırın bilgileri başarıyla güncellendi." << endl;
+} 
+else
+ {
+    cout << "Düzenlenecek fırın bulunamadı." << endl;
+}
+}
